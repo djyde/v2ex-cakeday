@@ -1,0 +1,88 @@
+html
+  head
+    title V2EX Cakeday
+    script(src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.3/moment.min.js")
+    script(src="//cdnjs.cloudflare.com/ajax/libs/superagent/1.2.0/superagent.min.js")
+    link(rel="stylesheet", href="//cdnjs.cloudflare.com/ajax/libs/normalize/3.0.3/normalize.min.css")
+    style.
+      body{
+        padding-top: 64px;
+      }
+      .center{
+        text-align: center;
+      }
+      input{
+        outline: none;
+        padding: 6px 12px;
+        font-size: 16px;
+        text-align: center;
+        border: 1px solid #d5d5d5;
+        border-right: 0;
+        border-radius: 6px 0 0 6px;
+      }
+      
+      .btn{
+        padding: 6px 11px;
+        text-decoration: none;
+        color: #000;
+        border: 1px solid #d5d5d5;
+        border-left: 0;
+        background-color: #f7f7f7;
+        font-size: 16px;
+        border-radius: 0 6px 6px 0;
+        //- margin-left: 12px;
+      }
+      
+      .info{
+        margin-top: 64px;
+        font-size: 14px;
+      }
+  body
+    h2.center See what V2EX looked like on the day you joined
+    .center
+      input#username(type="text", placeholder="Your Github ID")
+      a(href="javascript:void(0)").btn#go Go!
+      .info
+        p Inspired by 
+          a(href="http://i.puthtml.com/revgeorge/cakeday") a similar tool for Reddit
+          |  and 
+          a(href="http://bemmu.github.io/hncakeday/") a similar tool for Hackernews
+        p If you like this, please consider 
+          a(href="https://archive.org/donate/index.php") donating to the Internet Archive
+        a(href="https://github.com/djyde/github-cakeday") Open Source
+    script.
+      var btn = document.querySelector('#go');
+      var isRequesting = false;
+      var request = function(){
+        if(!isRequesting){
+          isRequesting = true;
+          var username = document.querySelector('#username').value;
+          btn.textContent = 'Loading...';
+          btn.style.backgroundColor = '#e2e2e2';
+          superagent
+            .get('http://www.v2ex.com/api/members/show.json?username=' + username)
+            .end(function(err,res){
+              if(err){
+                alert(res.body.message);
+                btn.textContent = 'Go!';
+                btn.style.cursor = 'pointer';
+                btn.style.backgroundColor = '#f7f7f7';
+                isRequesting = false;
+                console.log(res.body.message);
+              } else {
+                btn.textContent = 'Going...';
+                btn.style.cursor = 'default';
+                console.log(moment(res.body.created).format('YYYYMMDD'));
+                window.location = 'https://web.archive.org/web/' + moment(res.body.created_at).format('YYYYMMDDhhmmss') + '/http://v2ex.com/';
+              }
+            })
+        }
+      }
+      btn.addEventListener('click',function(){
+        request();
+      })
+      document.querySelector('#username').addEventListener('keydown',function(e){
+        if(e.keyCode == 13){
+          request();
+        }
+      })
